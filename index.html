@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyera DSPM: The Complete Architect's Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        /* Typography */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120; /* Darker Slate */
+            color: #e2e8f0;
+        }
+
+        h1, h2, h3, .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1120; }
+        ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 4px; }
+
+        /* Chart Containers - Responsive Constraints */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 1024px) { .chart-container { height: 400px; } }
+
+        /* UI Elements */
+        .neon-border {
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+        }
+        .neon-text {
+            text-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Timeline Connector */
+        .timeline-line {
+            position: absolute;
+            left: 24px;
+            top: 20px;
+            bottom: -40px;
+            width: 2px;
+            background: #334155;
+            z-index: 0;
+        }
+        .last-item .timeline-line { display: none; }
+    </style>
+</head>
+<body class="antialiased selection:bg-cyan-900 selection:text-cyan-100">
+
+    <!-- Navigation / Header -->
+    <header class="w-full bg-[#0f172a] border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-cyan-500 rounded-full animate-pulse"></div>
+                <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">
+                    CYERA <span class="text-cyan-500">DSPM</span> <span class="text-slate-500 text-sm font-normal">| ARCHITECT'S MASTERY</span>
+                </h1>
+            </div>
+            <div class="hidden md:flex gap-6 text-sm font-mono text-slate-400">
+                <span>01. DISCOVER</span>
+                <span>02. CLASSIFY</span>
+                <span>03. REMEDIATE</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20">
+
+        <!-- SECTION 1: Context & Composition -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-cyan-900/20 border border-cyan-800 text-cyan-400 text-xs font-mono">
+                    <span>PHASE 0</span>
+                    <span class="w-1 h-1 bg-cyan-400 rounded-full"></span>
+                    <span>THE VISIBILITY GAP</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-white leading-tight">
+                    Seeing the <span class="text-cyan-400 neon-text">Dark Data</span>
+                </h2>
+                <p class="text-slate-400 text-lg leading-relaxed">
+                    Before implementing Cyera, Architects must understand the "Iceberg Problem." Most cloud data isn't in production databases—it's in <strong>snapshots, logs, and unmanaged buckets</strong>. Traditional tools miss this. Cyera's value prop is finding this "Ghost Data."
+                </p>
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <div class="p-5 bg-slate-800/50 rounded-lg border-l-4 border-cyan-500">
+                        <div class="text-3xl font-mono font-bold text-white">42%</div>
+                        <div class="text-sm text-slate-400 mt-1">Avg. Unmanaged Data Volume</div>
+                    </div>
+                    <div class="p-5 bg-slate-800/50 rounded-lg border-l-4 border-rose-500">
+                        <div class="text-3xl font-mono font-bold text-white">100%</div>
+                        <div class="text-sm text-slate-400 mt-1">Agentless Coverage Required</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10 text-9xl">📊</div>
+                <h3 class="text-lg font-bold text-white mb-2">Cloud Data Composition</h3>
+                <p class="text-sm text-slate-400 mb-6">Visualizing where sensitive data actually lives vs. where we think it lives.</p>
+                <div class="chart-container">
+                    <canvas id="compositionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: 30-Day Ramp-Up Plan -->
+        <section>
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">The 30-Day Architect's Ramp-Up</h2>
+                <p class="text-slate-400">
+                    A structured chronological path to operational competence. This plan assumes zero prior Cyera knowledge but strong Security Engineering fundamentals.
+                </p>
+            </div>
+
+            <div class="relative space-y-0 max-w-5xl mx-auto">
+                
+                <!-- Week 1 -->
+                <div class="relative pl-16 pb-12">
+                    <div class="timeline-line"></div>
+                    <div class="absolute left-4 top-0 w-10 h-10 bg-slate-800 border-2 border-cyan-500 rounded-full flex items-center justify-center text-cyan-500 font-bold z-10">1</div>
+                    
+                    <div class="glass-card p-6 rounded-xl border-l-4 border-cyan-500">
+                        <h3 class="text-xl font-bold text-white mb-1">Week 1: Connectivity & Architecture</h3>
+                        <p class="text-cyan-400 text-sm font-mono mb-4">GOAL: 100% VISIBILITY IN PROD</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ul class="space-y-2 text-sm text-slate-300">
+                                <li class="flex items-start gap-2"><span class="text-cyan-500">▸</span> <strong>Agentless Setup:</strong> Deploy Cross-Account Roles (AWS) or Service Principals (Azure). No agents.</li>
+                                <li class="flex items-start gap-2"><span class="text-cyan-500">▸</span> <strong>Snapshot Mechanism:</strong> Understand how Cyera snapshots, mounts, scans, and discards data.</li>
+                                <li class="flex items-start gap-2"><span class="text-cyan-500">▸</span> <strong>IAM Analysis:</strong> Review permission chaining logic for "Effective Access."</li>
+                            </ul>
+                            <div class="bg-slate-900/50 p-4 rounded text-xs text-slate-400 font-mono">
+                                > CHECKLIST<br>
+                                [ ] Connect 1 Prod Account (Read-Only)<br>
+                                [ ] Verify CloudTrail/Activity Log Ingestion<br>
+                                [ ] Confirm no egress cost spikes
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 2 -->
+                <div class="relative pl-16 pb-12">
+                    <div class="timeline-line"></div>
+                    <div class="absolute left-4 top-0 w-10 h-10 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center text-blue-500 font-bold z-10">2</div>
+                    
+                    <div class="glass-card p-6 rounded-xl border-l-4 border-blue-500">
+                        <h3 class="text-xl font-bold text-white mb-1">Week 2: Classification & Intelligence</h3>
+                        <p class="text-blue-400 text-sm font-mono mb-4">GOAL: CONTEXTUAL ACCURACY</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ul class="space-y-2 text-sm text-slate-300">
+                                <li class="flex items-start gap-2"><span class="text-blue-500">▸</span> <strong>LLM Tuning:</strong> Distinguish between "Customer ID" (Sensitive) vs "Part ID" (Public) using context.</li>
+                                <li class="flex items-start gap-2"><span class="text-blue-500">▸</span> <strong>Data Classes:</strong> Map internal policy (Confidential, Restricted) to Cyera tags.</li>
+                                <li class="flex items-start gap-2"><span class="text-blue-500">▸</span> <strong>False Positives:</strong> Review 50 random samples to calibrate the engine.</li>
+                            </ul>
+                            <div class="bg-slate-900/50 p-4 rounded text-xs text-slate-400 font-mono">
+                                > CHECKLIST<br>
+                                [ ] Define custom Regex for proprietary IDs<br>
+                                [ ] Validate "Ghost Data" findings<br>
+                                [ ] Tag "Crown Jewel" assets manually if needed
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 3 (NEW) -->
+                <div class="relative pl-16 pb-12">
+                    <div class="timeline-line"></div>
+                    <div class="absolute left-4 top-0 w-10 h-10 bg-slate-800 border-2 border-purple-500 rounded-full flex items-center justify-center text-purple-500 font-bold z-10">3</div>
+                    
+                    <div class="glass-card p-6 rounded-xl border-l-4 border-purple-500">
+                        <h3 class="text-xl font-bold text-white mb-1">Week 3: Remediation & Workflows</h3>
+                        <p class="text-purple-400 text-sm font-mono mb-4">GOAL: ACTIONABLE REDUCTION</p>
+                        <p class="text-sm text-slate-300 mb-4">
+                            Data discovery is useless without action. This week focuses on routing alerts to the people who can fix them.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ul class="space-y-2 text-sm text-slate-300">
+                                <li class="flex items-start gap-2"><span class="text-purple-500">▸</span> <strong>Data Owner Assignment:</strong> Use Cloud Tags or heuristics to assign an "Owner" to every bucket/DB.</li>
+                                <li class="flex items-start gap-2"><span class="text-purple-500">▸</span> <strong>ITSM Integration:</strong> Connect Jira or ServiceNow. Map severity to ticket priority.</li>
+                                <li class="flex items-start gap-2"><span class="text-purple-500">▸</span> <strong>Automated Workflows:</strong> Create a rule: <em>"If S3 is Public + Contains PII -> Auto-ticket Security Team."</em></li>
+                            </ul>
+                            <!-- Workflow Chart (Mini) -->
+                            <div class="bg-slate-900/50 p-2 rounded h-32 flex items-center justify-center">
+                                <div class="w-full h-full">
+                                    <canvas id="workflowMiniChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 4 -->
+                <div class="relative pl-16 last-item">
+                    <div class="absolute left-4 top-0 w-10 h-10 bg-slate-800 border-2 border-emerald-500 rounded-full flex items-center justify-center text-emerald-500 font-bold z-10">4</div>
+                    
+                    <div class="glass-card p-6 rounded-xl border-l-4 border-emerald-500">
+                        <h3 class="text-xl font-bold text-white mb-1">Week 4: Operationalization</h3>
+                        <p class="text-emerald-400 text-sm font-mono mb-4">GOAL: STEADY STATE POSTURE</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ul class="space-y-2 text-sm text-slate-300">
+                                <li class="flex items-start gap-2"><span class="text-emerald-500">▸</span> <strong>Executive Dashboards:</strong> Create "Risk reduction over time" views for the CISO.</li>
+                                <li class="flex items-start gap-2"><span class="text-emerald-500">▸</span> <strong>Least Privilege:</strong> Start removing "Over-privileged" access based on usage data.</li>
+                                <li class="flex items-start gap-2"><span class="text-emerald-500">▸</span> <strong>Data Lineage:</strong> Map how data moves from Prod to lower environments.</li>
+                            </ul>
+                            <div class="bg-slate-900/50 p-4 rounded text-xs text-slate-400 font-mono">
+                                > CHECKLIST<br>
+                                [ ] Automate weekly PDF reports<br>
+                                [ ] Set retention policies for scan results<br>
+                                [ ] Full deployment to all remaining accounts
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 3: Battle Card (Pros vs Cons) -->
+        <section class="bg-gradient-to-br from-slate-900 to-slate-800 border-y border-slate-700 py-16">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-white mb-4">Competitive Landscape: The Battle Card</h2>
+                    <p class="text-slate-400">Honest comparison against Traditional DLP and First-Gen CSPM tools.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- CYERA PROS/CONS -->
+                    <div class="bg-[#1e293b] rounded-xl p-6 shadow-xl border border-cyan-500/30">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+                            <h3 class="text-2xl font-bold text-cyan-400">CYERA / Modern DSPM</h3>
+                            <span class="bg-cyan-900 text-cyan-200 text-xs px-2 py-1 rounded">Agentless</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-emerald-400 font-bold mb-3 flex items-center">✅ STRENGTHS</h4>
+                                <ul class="text-sm text-slate-300 space-y-3">
+                                    <li><strong>Time-to-Value:</strong> Connects in minutes via API. No infrastructure to manage.</li>
+                                    <li><strong>Context (LLM):</strong> Understands *meaning*, not just Regex patterns. Fewer false positives.</li>
+                                    <li><strong>Ghost Data:</strong> Finds backups and snapshots others miss completely.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-rose-400 font-bold mb-3 flex items-center">❌ CHALLENGES</h4>
+                                <ul class="text-sm text-slate-300 space-y-3">
+                                    <li><strong>Cost Model:</strong> Scan-volume pricing can scale poorly with massive data lakes if not tuned.</li>
+                                    <li><strong>Real-time Blocking:</strong> Lacks inline blocking (proxy) capabilities of endpoint DLP.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LEGACY DLP PROS/CONS -->
+                    <div class="bg-[#1e293b] rounded-xl p-6 shadow-xl border border-slate-600">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+                            <h3 class="text-2xl font-bold text-slate-300">Legacy DLP / Endpoint</h3>
+                            <span class="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded">Agent-Based</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-emerald-400 font-bold mb-3 flex items-center">✅ STRENGTHS</h4>
+                                <ul class="text-sm text-slate-300 space-y-3">
+                                    <li><strong>Blocking:</strong> Can stop a file upload or USB copy in real-time.</li>
+                                    <li><strong>On-Prem:</strong> Mature footprint for physical servers and workstations.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-rose-400 font-bold mb-3 flex items-center">❌ CHALLENGES</h4>
+                                <ul class="text-sm text-slate-300 space-y-3">
+                                    <li><strong>Blind Spots:</strong> Cannot see inside PaaS databases (RDS) or snapshots.</li>
+                                    <li><strong>Maintenance:</strong> "Regex Hell"—constant tuning of pattern matching rules.</li>
+                                    <li><strong>Friction:</strong> Agents slow down developer machines and production servers.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparative Chart -->
+                <div class="mt-12 glass-card p-6 rounded-xl">
+                    <h4 class="text-white font-bold mb-4 text-center">Performance Metrics Head-to-Head</h4>
+                    <div class="chart-container">
+                        <canvas id="comparisonBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Architecture Flow (HTML Diagram) -->
+        <section class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-white mb-8 text-center">The Agentless Scanning Flow</h2>
+            <div class="grid grid-cols-1 md:grid-cols-7 gap-4 text-center items-center">
+                
+                <!-- Step 1 -->
+                <div class="col-span-1 md:col-span-2 p-6 bg-slate-800 rounded-lg border border-slate-600 hover:border-cyan-400 transition-colors">
+                    <div class="text-3xl mb-2">🔌</div>
+                    <div class="font-bold text-white">1. Discovery</div>
+                    <div class="text-xs text-slate-400 mt-2">Connect via Role/Principal. Map inventory.</div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="hidden md:block col-span-1 text-slate-500 text-2xl">➔</div>
+
+                <!-- Step 2 -->
+                <div class="col-span-1 md:col-span-1 p-6 bg-slate-800 rounded-lg border border-slate-600 hover:border-cyan-400 transition-colors">
+                    <div class="text-3xl mb-2">📸</div>
+                    <div class="font-bold text-white">2. Snapshot</div>
+                    <div class="text-xs text-slate-400 mt-2">Trigger cloud-native snapshot.</div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="hidden md:block col-span-1 text-slate-500 text-2xl">➔</div>
+
+                <!-- Step 3 -->
+                <div class="col-span-1 md:col-span-2 p-6 bg-slate-800 rounded-lg border border-slate-600 hover:border-cyan-400 transition-colors relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cyan-900/20"></div>
+                    <div class="relative z-10">
+                        <div class="text-3xl mb-2">🧠</div>
+                        <div class="font-bold text-white">3. Analysis Enclave</div>
+                        <div class="text-xs text-slate-400 mt-2">Mount -> Scan (LLM) -> Classify -> <span class="text-rose-400">Delete Snapshot</span></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 5: Implementation Questions Checklist -->
+        <section>
+            <h2 class="text-3xl font-bold text-white mb-8 text-center">Engineer's Implementation Checklist</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Egress -->
+                <div class="bg-slate-800 p-6 rounded-lg border-t-2 border-cyan-500">
+                    <h3 class="font-bold text-white mb-2">💰 Egress & Cost</h3>
+                    <p class="text-sm text-slate-400">Ensure the Scanning Enclave is in the <strong>same region</strong> as the data to avoid cross-region transfer fees.</p>
+                </div>
+                <!-- Permissions -->
+                <div class="bg-slate-800 p-6 rounded-lg border-t-2 border-purple-500">
+                    <h3 class="font-bold text-white mb-2">🛡️ Least Privilege</h3>
+                    <p class="text-sm text-slate-400">Does the scanning role have permission to <em>modify</em> data? (Should be Read-Only + Snapshot Management).</p>
+                </div>
+                <!-- Encryption -->
+                <div class="bg-slate-800 p-6 rounded-lg border-t-2 border-emerald-500">
+                    <h3 class="font-bold text-white mb-2">🔐 Encryption Keys</h3>
+                    <p class="text-sm text-slate-400">If using Customer Managed Keys (KMS/CMK), does the scanner role have `kms:Decrypt` permissions?</p>
+                </div>
+                <!-- Performance -->
+                <div class="bg-slate-800 p-6 rounded-lg border-t-2 border-blue-500">
+                    <h3 class="font-bold text-white mb-2">🚀 Prod Impact</h3>
+                    <p class="text-sm text-slate-400">Verify scanning is done on <strong>snapshots/backups</strong>, not live IOPS-intensive production databases.</p>
+                </div>
+                <!-- Compliance -->
+                <div class="bg-slate-800 p-6 rounded-lg border-t-2 border-rose-500">
+                    <h3 class="font-bold text-white mb-2">📜 Data Residency</h3>
+                    <p class="text-sm text-slate-400">Ensure metadata sent to Cyera's SaaS plane stays within the required geopolitical boundary (e.g., EU vs US).</p>
+                </div>
+                <!-- SaaS -->
+                <div class="bg-slate-800 p-6 rounded-lg border-t-2 border-yellow-500">
+                    <h3 class="font-bold text-white mb-2">☁️ SaaS Coverage</h3>
+                    <p class="text-sm text-slate-400">Does the scope include M365/Salesforce? These use API throttling, not snapshots. Check limits.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-10 text-center">
+        <p class="text-slate-500 text-sm">Generated for Senior Security Architects</p>
+        <p class="text-slate-600 text-xs mt-2">Cyera DSPM Implementation Plan v2.0</p>
+    </footer>
+
+    <script>
+        // --- Shared Configuration & Utilities ---
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter';
+
+        // Label Splitting Logic (16 chars max per line)
+        function splitLabel(label) {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= 16) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        // Common Tooltip Config
+        const tooltipConfig = {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            titleColor: '#fff',
+            bodyColor: '#cbd5e1',
+            borderColor: '#334155',
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    return Array.isArray(label) ? label.join(' ') : label;
+                }
+            }
+        };
+
+        // --- CHART 1: Composition (Doughnut) ---
+        const ctxComp = document.getElementById('compositionChart').getContext('2d');
+        const labelsComp = ['Production DBs', 'S3/Blob Storage', 'Snapshots (Ghost)', 'Logs & Archives', 'Dev/Test Ephemeral'];
+        new Chart(ctxComp, {
+            type: 'doughnut',
+            data: {
+                labels: labelsComp.map(splitLabel),
+                datasets: [{
+                    data: [20, 25, 30, 15, 10],
+                    backgroundColor: ['#0ea5e9', '#6366f1', '#f43f5e', '#64748b', '#10b981'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: tooltipConfig
+                }
+            }
+        });
+
+        // --- CHART 2: Workflow Priorities (Mini Pie for Week 3) ---
+        const ctxWorkflow = document.getElementById('workflowMiniChart').getContext('2d');
+        new Chart(ctxWorkflow, {
+            type: 'pie',
+            data: {
+                labels: ['Auto-Remediate', 'Ticket to Owner', 'Manual Review'],
+                datasets: [{
+                    data: [40, 45, 15],
+                    backgroundColor: ['#a855f7', '#3b82f6', '#94a3b8'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: tooltipConfig
+                }
+            }
+        });
+
+        // --- CHART 3: Competitive Comparison (Grouped Bar) ---
+        const ctxBar = document.getElementById('comparisonBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Setup Time (Hours)', 'False Positive Rate (%)', 'Cloud Coverage (%)', 'Maint. Effort (hrs/wk)'].map(splitLabel),
+                datasets: [
+                    {
+                        label: 'Cyera DSPM',
+                        data: [2, 5, 98, 4],
+                        backgroundColor: '#06b6d4', // Cyan
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Legacy DLP',
+                        data: [120, 45, 40, 20],
+                        backgroundColor: '#475569', // Slate
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#334155' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    tooltip: tooltipConfig,
+                    legend: {
+                        labels: { color: '#cbd5e1' }
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+<!-- 
+    CHANGELOG:
+    1. Added Week 3: Dedicated section for "Remediation & Workflows" in the timeline.
+    2. Added Pros/Cons Section: "Battle Card" layout comparing Cyera vs Legacy DLP.
+    3. Added Comparative Chart: Grouped Bar Chart in the Battle Card section to quantify the differences.
+    4. Maintained No SVG / No Mermaid constraint.
+-->
+</html>
